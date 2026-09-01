@@ -22,6 +22,7 @@ import streamlit as st
 import silo_catchment as sc
 from silo_catchment.flow import DELIMITERS, DATE_FORMATS, DAY_BOUNDARIES
 from silo_catchment.units import FLOW_UNITS
+import run_counter
 
 st.set_page_config(page_title="Catchment SILO averaging", layout="wide")
 
@@ -93,6 +94,13 @@ with head_text:
     )
 with head_logo:
     st.image('HydroSILO_Logo.png', width='stretch')
+
+# Shared run counter. Read once per session; shows nothing if not configured.
+if "run_count" not in st.session_state:
+    st.session_state["run_count"] = run_counter.get_runs()
+if st.session_state["run_count"] is not None:
+    st.caption(f"This tool has been run {st.session_state['run_count']:,} times.")
+
 # --------------------------------------------------------------------------- #
 # 1. request details
 # --------------------------------------------------------------------------- #
@@ -321,7 +329,14 @@ if st.button("Run catchment average", type="primary", disabled=not can_run):
         st.session_state["climate_preview"] = climate_out.head(20)
         st.session_state["combined_preview"] = (
             combined_out.head(20) if combined_out is not None else None)
-        st.success("Done. Downloads are below.")
+
+        # count this completed run; harmless if the counter is not configured
+        new_total = run_counter.increment_runs()
+        if new_total is not None:
+            st.session_state["run_count"] = new_total
+            st.success(f"Done. Downloads are below. This was run #{new_total:,}.")
+        else:
+            st.success("Done. Downloads are below.")
     except Exception as error:
         st.error(f"Run failed: {error}")
 
