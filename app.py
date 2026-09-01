@@ -90,7 +90,7 @@ with head_text:
         "Note: HydroSILO only works for Australian catchments."
     )
 with head_logo:
-    st.image('HydroSILO_Logo.png', width='stretch')
+    st.image('HydroSILO_Logo.png', width='300')
 # --------------------------------------------------------------------------- #
 # 1. request details
 # --------------------------------------------------------------------------- #
