@@ -78,15 +78,19 @@ def load_catchment_from_uploads(files, extract_dir: Path):
 # --------------------------------------------------------------------------- #
 # header
 # --------------------------------------------------------------------------- #
-st.title("HydroSILO")
-st.markdown(
-    "Upload a catchment boundary and get the SILO Data Drill climate averaged "
-    "over it, sampled by area and weighted by the grid cells the catchment "
-    "covers. Add a flow file to also get a combined, model-ready file for  "
-    "the associated HydroSTITCH tool that runs lumped parameter catchment models."
-    "Note: HydroSILO only works for Australian catchments."
-)
+head_text, head_logo = st.columns([3, 1], vertical_alignment='center')
 
+with head_text:
+st.title("HydroSILO")
+    st.markdown(
+        "Upload a catchment boundary and get the SILO Data Drill climate averaged "
+        "over it, sampled by area and weighted by the grid cells the catchment "
+        "covers. Add a flow file to also get a combined, model-ready file for  "
+        "the associated HydroSTITCH tool that runs lumped parameter catchment models."
+        "Note: HydroSILO only works for Australian catchments."
+    )
+with head_logo:
+    st.image('HydroSILO_Logo.png', width='stretch')
 # --------------------------------------------------------------------------- #
 # 1. request details
 # --------------------------------------------------------------------------- #
