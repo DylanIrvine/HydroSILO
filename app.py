@@ -22,7 +22,7 @@ import streamlit as st
 import silo_catchment as sc
 from silo_catchment.flow import DELIMITERS, DATE_FORMATS, DAY_BOUNDARIES
 from silo_catchment.units import FLOW_UNITS
-import run_counter
+from silo_catchment import run_counter
 
 st.set_page_config(page_title="Catchment SILO averaging", layout="wide")
 
