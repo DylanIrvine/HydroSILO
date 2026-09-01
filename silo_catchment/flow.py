@@ -61,7 +61,21 @@ def parse_flow(frame: pd.DataFrame, date_column: str, flow_column: str,
 
     flags = DATE_FORMATS[date_format]
     stamp = frame[date_column].astype("string").str.strip()
+
+    # Kisters / BoM Water Data Online timestamps carry a timezone offset, for
+    # example 1953-03-02T09:00:00.000+09:30. Parsed as-is these become
+    # timezone-aware and then cannot be merged or compared against the
+    # timezone-naive SILO dates. Drop a trailing 'Z' or +HH:MM / -HH:MM offset
+    # so the local wall-clock time is kept: the 9am stamp stays at 9am on its
+    # own date. The date part is never at the end of the string, so this cannot
+    # touch it.
+    stamp = stamp.str.replace(r"\s*(?:Z|[+-]\d{2}:?\d{2})\s*$", "", regex=True)
+
     parsed = pd.to_datetime(stamp, errors="coerce", **flags)
+    # Belt and braces: if anything still parsed as timezone-aware (an unusual
+    # offset spelling), keep the local wall-clock time and drop the zone.
+    if isinstance(parsed.dtype, pd.DatetimeTZDtype):
+        parsed = parsed.dt.tz_localize(None)
 
     bad = parsed.isna() & stamp.notna() & (stamp != "")
     if bad.all():
