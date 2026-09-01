@@ -81,7 +81,7 @@ def load_catchment_from_uploads(files, extract_dir: Path):
 head_text, head_logo = st.columns([3, 1], vertical_alignment='center')
 
 with head_text:
-st.title("HydroSILO")
+    st.title("HydroSILO")
     st.markdown(
         "Upload a catchment boundary and get the SILO Data Drill climate averaged "
         "over it, sampled by area and weighted by the grid cells the catchment "
