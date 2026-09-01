@@ -83,12 +83,12 @@ head_text, head_logo = st.columns([4, 1], vertical_alignment='center')
 with head_text:
     st.title("HydroSILO")
     st.subheader("Calculate catchment-averaged properties from the SILO database")
-    st.write('Dylan Irvine, Charles Darwin University.\n')
+    st.write('Dylan Irvine, Charles Darwin University.\n\n')
     st.markdown(
-        "Upload a catchment boundary and get the Queensland Government SILO Data Drill climate averaged over it."
-        "Data are sampled by area and weighted by the grid cells the catchment covers. Add a flow "
-        "file to also get a combined, model-ready file for  the associated HydroSTITCH tool "
-        "that runs lumped parameter catchment models.\n\n" 
+        "Upload a catchment boundary and obtain catchment-averaged climate data for your shapefile "
+        "using data from the Queensland Government SILO database. Data are sampled by area and weighted "
+        "by the grid cells the catchment covers. Add a flow file to also get a combined,  model-ready "
+        "file for  the associated HydroSTITCH tool that runs lumped parameter catchment models.\n\n"
         "Note: HydroSILO only works for Australian catchments."
     )
 with head_logo:
