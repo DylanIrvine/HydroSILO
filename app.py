@@ -90,7 +90,8 @@ with head_text:
         "point data from the Queensland Government SILO database. Data are sampled by area and weighted "
         "by the grid cells the catchment covers. Add a flow file to also get a combined,  model-ready "
         "file for  the associated HydroSTITCH tool that runs lumped parameter catchment models.\n\n"
-        "Note: HydroSILO only works for Australian catchments."
+        "Note: HydroSILO only works for Australian catchments \n\n."
+        "Current limitations: Shapefile must be a single polygon."
     )
 with head_logo:
     st.image('HydroSILO_Logo.png', width='stretch')
