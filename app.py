@@ -86,8 +86,8 @@ with head_text:
     st.subheader("Calculate catchment-averaged properties from the SILO database")
     st.write('Dylan Irvine, Charles Darwin University.\n\n')
     st.markdown(
-        "Upload a catchment boundary and obtain catchment-averaged climate data for your shapefile "
-        "using data from the Queensland Government SILO database. Data are sampled by area and weighted "
+        "Upload a shapefile or geopackage and obtain averaged climate data for your region randomly sampled "
+        "point data from the Queensland Government SILO database. Data are sampled by area and weighted "
         "by the grid cells the catchment covers. Add a flow file to also get a combined,  model-ready "
         "file for  the associated HydroSTITCH tool that runs lumped parameter catchment models.\n\n"
         "Note: HydroSILO only works for Australian catchments."
