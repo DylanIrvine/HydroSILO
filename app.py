@@ -101,6 +101,12 @@ if "run_count" not in st.session_state:
 if st.session_state["run_count"] is not None:
     st.caption(f"This tool has been run {st.session_state['run_count']:,} times.")
 
+with st.expander('**References**'):
+  st.write(
+    'Queensland Government, (2026). SILO | LongPaddock | SILO - Australian climate data ',
+    'from 1889 to yesterday. URL https://www.longpaddock.qld.gov.au/silo/ \n\n'
+    )
+
 # --------------------------------------------------------------------------- #
 # 1. request details
 # --------------------------------------------------------------------------- #
