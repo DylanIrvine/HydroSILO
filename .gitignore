@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.DS_Store
+.ipynb_checkpoints/
+# local scratch and outputs
+outputs/
+*_SILO_outputs.zip
+*_combined_climate_flow.csv
+sample_data/private/
+.pytest_cache/
