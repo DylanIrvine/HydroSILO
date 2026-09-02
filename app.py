@@ -79,7 +79,7 @@ def load_catchment_from_uploads(files, extract_dir: Path):
 # --------------------------------------------------------------------------- #
 # header
 # --------------------------------------------------------------------------- #
-head_text, head_logo = st.columns([4, 1], vertical_alignment='center')
+head_text, head_logo = st.columns([3, 1], vertical_alignment='center')
 
 with head_text:
     st.title("HydroSILO")
