@@ -85,6 +85,9 @@ with head_text:
     st.title("HydroSILO")
     st.subheader("Calculate catchment-averaged properties from the SILO database")
     st.write('Dylan Irvine, Charles Darwin University.\n\n')
+with head_logo:
+    st.image('HydroSILO_Logo.png', width='stretch')
+
     st.markdown(
         "Upload a shapefile or geopackage and obtain averaged climate data for your region using randomly sampled "
         "point data from the Queensland Government SILO database. Data are sampled by area and weighted "
@@ -93,8 +96,6 @@ with head_text:
         "Note: HydroSILO only works for Australian catchments. \n\n"
         "Current limitations: Shapefile must be a single polygon."
     )
-with head_logo:
-    st.image('HydroSILO_Logo.png', width='stretch')
 
 # Shared run counter. Read once per session; shows nothing if not configured.
 if "run_count" not in st.session_state:
