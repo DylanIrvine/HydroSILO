@@ -24,7 +24,7 @@ from silo_catchment.flow import DELIMITERS, DATE_FORMATS, DAY_BOUNDARIES
 from silo_catchment.units import FLOW_UNITS
 from silo_catchment import run_counter
 
-st.set_page_config(page_title="Catchment SILO averaging", layout="wide")
+st.set_page_config(page_title="HydroSILO")
 
 SILO_FIRST_DAY = dt.date(1889, 1, 1)
 
