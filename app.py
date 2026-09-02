@@ -271,7 +271,10 @@ if st.button("Run catchment average", type="primary", disabled=not can_run):
         st.write(f"Sampling {nominal} points, {len(points)} unique SILO cells.")
 
         figure = sc.sampling_map(selected_gdf, points)
-        st.pyplot(figure)
+        #st.pyplot(figure)
+        fig_col, _ = st.columns([1, 1])
+            with fig_col:
+                st.pyplot(figure)
 
         progress_bar = st.progress(0.0)
         status = st.empty()
