@@ -273,8 +273,8 @@ if st.button("Run catchment average", type="primary", disabled=not can_run):
         figure = sc.sampling_map(selected_gdf, points)
         #st.pyplot(figure)
         fig_col, _ = st.columns([1, 1])
-            with fig_col:
-                st.pyplot(figure)
+        with fig_col:
+            st.pyplot(figure)
 
         progress_bar = st.progress(0.0)
         status = st.empty()
