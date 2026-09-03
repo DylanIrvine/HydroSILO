@@ -37,7 +37,7 @@ def add_derived_columns(climate: pd.DataFrame,
     fao = climate[FAO56]
 
     climate["Excess water (mm)"] = (rain - wet_pet).clip(lower=0)
-    climate["Aridity index (P/PET)"] = (rain / fao).replace([np.inf, -np.inf], np.nan)
+    climate["Aridity index (P/PET)"] = (rain /  wet_pet).replace([np.inf, -np.inf], np.nan)
 
     climate["7-day cumulative rainfall (mm)"] = rain.rolling(7, min_periods=1).sum()
     climate["14-day cumulative rainfall (mm)"] = rain.rolling(14, min_periods=1).sum()
@@ -51,7 +51,7 @@ def add_derived_columns(climate: pd.DataFrame,
     start_year = year.where(month >= water_year_start_month, year - 1)
     water_year_start = pd.to_datetime(
         start_year.astype(str) + f"-{water_year_start_month:02d}-01")
-    climate["Day of water year"] = (climate["Date"] - water_year_start).dt.days + 1
+    #climate["Day of water year"] = (climate["Date"] - water_year_start).dt.days + 1
 
     # A 30-day rolling rainfall z-score, not a gamma-fitted SPI.
     rolling_mean = rain.rolling(30, min_periods=30).mean()
