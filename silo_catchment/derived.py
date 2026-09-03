@@ -56,7 +56,7 @@ def add_derived_columns(climate: pd.DataFrame,
     # A 30-day rolling rainfall z-score, not a gamma-fitted SPI.
     rolling_mean = rain.rolling(30, min_periods=30).mean()
     rolling_std = rain.rolling(30, min_periods=30).std()
-    climate["30-day rolling rainfall z-score"] = (
-        (rain - rolling_mean) / rolling_std).replace([np.inf, -np.inf], np.nan)
+    #climate["30-day rolling rainfall z-score"] = (
+    #    (rain - rolling_mean) / rolling_std).replace([np.inf, -np.inf], np.nan)
 
     return climate
