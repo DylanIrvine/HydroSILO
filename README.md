@@ -1,14 +1,26 @@
-# Catchment-averaged SILO climate
+# HydroSILO
+
+Catchment-averaged SILO climate for Australian catchments, with an optional flow join.
+
+Live app: https://hydrosilo.streamlit.app/
 
 A Streamlit app that takes an Australian catchment boundary and returns the
 [SILO Data Drill](https://www.longpaddock.qld.gov.au/silo/) climate averaged over
 it, plus a map of the grid cells used. If a flow file is also provided, it builds
 a combined climate-and-flow file with flow added in mm/d, ready for a
-rainfall-runoff model.
+rainfall-runoff model. The combined file is the input that HydroSTITCH
+(https://gr4j-gapfill-webapp.streamlit.app/) expects.
 
-It is the interactive, single-catchment version of a batch script: instead of a
-checked CSV of file paths, the user uploads one catchment and configures the run
-in the browser.
+Current version: 1.0 (set by `APP_VERSION` near the top of `app.py`).
+
+## Using it
+
+1. Enter an email (SILO asks for one as the username) and a date range.
+2. Upload the catchment boundary: a zipped shapefile, a `.gpkg` or a `.geojson`.
+3. Optionally change the sampling settings, the output prefix, the column detail
+   and the date format.
+4. Optionally add a flow file and say which columns and units it uses.
+5. Run, then download the zip or the individual files.
 
 ## What it produces
 
@@ -58,7 +70,7 @@ the catchment climate is their weighted daily mean.
 ## Repository layout
 
 ```
-catchment-silo-app/
+HydroSILO/
   app.py                    Streamlit UI and orchestration only
   silo_catchment/           the hydrology, as plain testable functions
     catchment.py            load shapefile/zip/gpkg, CRS, polygon, area
@@ -69,9 +81,13 @@ catchment-silo-app/
     combine.py              join climate and flow by date
     units.py                m3/s, ML/d, mm/d conversions
     plotting.py             sampling-cell map
-  tests/                    non-network pytest suite
+    run_counter.py          shared run total (Upstash Redis over REST)
+  tests/                    non-network pytest suite and a headless app check
+  HydroSILO_Logo.png        header logo
+  HydroSILO_favicon.png     browser-tab icon
   requirements.txt
-  .streamlit/config.toml
+  .streamlit/config.toml    dark theme
+  LICENSE
 ```
 
 ## Run locally
@@ -83,24 +99,39 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Deploy on Streamlit Community Cloud
+## Deploying
 
-1. Put this folder in a GitHub repository (see the commands below).
-2. At [share.streamlit.io](https://share.streamlit.io), sign in with GitHub and
-   choose "New app".
-3. Select the repository, branch `main`, and `app.py` as the entry point.
-4. Deploy. The geospatial wheels (`geopandas`, `pyogrio`, `shapely`, `pyproj`)
-   install from `requirements.txt`; no `apt` packages are needed because
-   `pyogrio` bundles GDAL.
+The public app runs on Streamlit Community Cloud from the `main` branch with
+`app.py` as the entry point. The geospatial wheels (`geopandas`, `pyogrio`,
+`shapely`, `pyproj`) install from `requirements.txt`; no `apt` packages are
+needed because `pyogrio` bundles GDAL.
 
-```bash
-git init
-git add .
-git commit -m "Catchment SILO averaging app"
-git branch -M main
-git remote add origin https://github.com/<you>/catchment-silo-app.git
-git push -u origin main
+After pushing a change, reboot the app from the Streamlit Cloud menu. A pull on
+its own can leave old copies of the `silo_catchment` modules in memory.
+
+## Privacy and the run counter
+
+- The catchment file is read on the server and held in memory for the session.
+  The copy saved to read it is deleted straight away. A flow file is read into
+  memory only. Nothing is written to a database or permanent storage.
+- To get the climate, the app sends SILO the grid cell coordinates inside the
+  catchment, the date range and the user's email. The boundary file and flow
+  data are not sent. The email is not stored or logged by the app.
+- The only thing recorded is a running total of completed runs, kept in an
+  Upstash Redis database under the key `silo_run_count`. It has no link to any
+  user, email or file.
+
+The counter is optional. To turn it on, add this to the app's Secrets on
+Streamlit Cloud, or to `.streamlit/secrets.toml` locally:
+
 ```
+[upstash]
+url = "https://<name>.upstash.io"
+token = "<REST token>"
+```
+
+Without it the app runs normally and shows no count. `.streamlit/secrets.toml`
+is in `.gitignore`. Never commit the token.
 
 ## Notes and limits
 
@@ -120,3 +151,23 @@ git push -u origin main
 pip install pytest
 pytest tests/
 ```
+
+## How to cite
+
+Irvine, D.J. (2026). HydroSILO (version 1.0) [Web application]. Charles Darwin
+University. https://hydrosilo.streamlit.app/
+
+Please also cite the SILO data:
+
+Jeffrey, S.J., Carter, J.O., Moodie, K.B., and Beswick, A.R. (2001). Using
+spatial interpolation to construct a comprehensive archive of Australian climate
+data. Environmental Modelling and Software 16(4), 309-330.
+
+## Licence
+
+MIT. See `LICENSE`.
+
+## Credits
+
+Dylan Irvine, Charles Darwin University. Climate data are from SILO, hosted by
+the Queensland Government.

@@ -11,3 +11,5 @@ outputs/
 *_combined_climate_flow.csv
 sample_data/private/
 .pytest_cache/
+# never commit secrets (the run counter token lives here)
+.streamlit/secrets.toml

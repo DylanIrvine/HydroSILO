@@ -16,6 +16,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 
+import matplotlib.transforms as mtransforms
 import pandas as pd
 import streamlit as st
 
@@ -24,7 +25,13 @@ from silo_catchment.flow import DELIMITERS, DATE_FORMATS, DAY_BOUNDARIES
 from silo_catchment.units import FLOW_UNITS
 from silo_catchment import run_counter
 
-st.set_page_config(page_title="HydroSILO")
+APP_NAME = "HydroSILO"
+# bump on each release. Also used in the citation and the run summary
+APP_VERSION = "1.0"
+APP_URL = "https://hydrosilo.streamlit.app/"
+WATERMARK = "Dylan Irvine, Charles Darwin University"
+
+st.set_page_config(page_title=APP_NAME, page_icon="HydroSILO_favicon.png")
 
 SILO_FIRST_DAY = dt.date(1889, 1, 1)
 
@@ -47,6 +54,18 @@ def figure_bytes(figure) -> bytes:
     buffer = io.BytesIO()
     figure.savefig(buffer, format="png", dpi=300, bbox_inches="tight")
     return buffer.getvalue()
+
+
+def add_watermark(figure):
+    # small grey line in its own strip just below the drawn area, bottom left,
+    # so it can be cropped off without touching the map
+    figure.canvas.draw()
+    box = figure.get_tightbbox(figure.canvas.get_renderer())   # inches
+    width, height = figure.get_size_inches()
+    below = figure.transFigure + mtransforms.ScaledTranslation(
+        0, -5 / 72, figure.dpi_scale_trans)
+    figure.text(box.x0 / width, box.y0 / height, WATERMARK, transform=below,
+                ha="left", va="top", fontsize=6, color="0.5")
 
 
 def save_uploads(files, folder: Path) -> list[Path]:
@@ -85,6 +104,7 @@ with head_text:
     st.title("HydroSILO")
     st.subheader("Calculate catchment-averaged properties from the SILO database")
     st.write('Dylan Irvine, Charles Darwin University.\n\n')
+    st.caption(f"Version {APP_VERSION}")
 with head_logo:
     st.image('HydroSILO_Logo.png', width='stretch')
 
@@ -103,10 +123,44 @@ if "run_count" not in st.session_state:
 if st.session_state["run_count"] is not None:
     st.caption(f"This tool has been run {st.session_state['run_count']:,} times.")
 
-with st.expander('**References**'):
-  st.write(
-    'Queensland Government, (2026). SILO | LongPaddock | SILO - Australian climate data ',
-    'from 1889 to yesterday. URL https://www.longpaddock.qld.gov.au/silo/ \n\n'
+with st.expander('**Privacy and data handling**'):
+    st.markdown(
+        '**Your data**\n'
+        '- The catchment file is read on the server, held in memory for your session, and '
+        'discarded when the session ends. The copy used to read it is deleted straight away. '
+        'Nothing is saved to a database or to permanent storage.\n'
+        '- A flow file, if you add one, is read into memory only.\n'
+        '- The results exist only in the files you download.\n\n'
+        '**What is sent to SILO**\n'
+        '- To get the climate data, the app sends the Queensland Government SILO service the '
+        'grid cell coordinates inside your catchment, the date range, and your email address '
+        '(SILO asks for an email as the username). SILO therefore sees roughly where your '
+        'catchment is. The boundary file and any flow data are not sent.\n'
+        '- Your email is used for that request only. This app does not store or log it.\n\n'
+        '**You**\n'
+        '- No login, and no record kept by this app of who you are or where you are. The app does '
+        'not log IP addresses or locations.\n'
+        '- The only thing recorded is a single running total: the number of completed runs. It '
+        'has no link to any user, email or file.\n\n'
+        '**What this does not cover**\n'
+        '- Processing happens on the server that hosts the app, not on your computer. If you are '
+        'using the public web version, your files travel to that host (which may be outside '
+        'Australia). The hosting provider and the Streamlit framework may use their own cookies '
+        'and keep their own server logs, under their own privacy policies.\n'
+        '- If your data are confidential or subject to a data agreement, run the app on your own '
+        'machine. The code is open source (MIT).')
+
+with st.expander('**How to cite and references**'):
+    st.write(
+        'This app:\n\n'
+        f'Irvine, D.J. ({dt.date.today().year}). {APP_NAME} (version {APP_VERSION}) '
+        f'[Web application]. Charles Darwin University. {APP_URL}\n\n'
+        'Please also cite the SILO data:\n\n'
+        'Jeffrey, S.J., Carter, J.O., Moodie, K.B., and Beswick, A.R. (2001). Using spatial '
+        'interpolation to construct a comprehensive archive of Australian climate data. '
+        'Environmental Modelling and Software 16(4), 309-330.\n\n'
+        'Queensland Government (2026). SILO | LongPaddock | SILO - Australian climate data '
+        'from 1889 to yesterday. URL https://www.longpaddock.qld.gov.au/silo/ \n\n'
     )
 
 # --------------------------------------------------------------------------- #
@@ -148,8 +202,9 @@ default_prefix = "catchment"
 
 if catchment_files:
     try:
-        work_dir = Path(tempfile.mkdtemp())
-        gdf = load_catchment_from_uploads(catchment_files, work_dir)
+        # the saved copy is only needed while it is being read
+        with tempfile.TemporaryDirectory() as work_dir:
+            gdf = load_catchment_from_uploads(catchment_files, Path(work_dir))
         gdf = sc.polygon_features(gdf)
 
         if gdf.crs is None:
@@ -229,7 +284,7 @@ if flow_file is not None:
         raw_flow = sc.load_flow_table(io.BytesIO(flow_file.getvalue()),
                                       skiprows=int(skiprows),
                                       delimiter=DELIMITERS[delim_label])
-        st.dataframe(raw_flow.head(8), use_container_width=True)
+        st.dataframe(raw_flow.head(8), width='stretch')
         columns = list(raw_flow.columns)
 
         col_d, col_f, col_fmt = st.columns(3)
@@ -272,6 +327,7 @@ if st.button("Run catchment average", type="primary", disabled=not can_run):
         st.write(f"Sampling {nominal} points, {len(points)} unique SILO cells.")
 
         figure = sc.sampling_map(selected_gdf, points)
+        add_watermark(figure)
         #st.pyplot(figure)
         fig_col, _ = st.columns([1, 1])
         with fig_col:
@@ -305,6 +361,7 @@ if st.button("Run catchment average", type="primary", disabled=not can_run):
         outputs[f"{prefix}_area_km2.txt"] = f"Area_km2: {area_km2:.6f}\n".encode("utf-8")
 
         summary = "\n".join([
+            f"{APP_NAME} version: {APP_VERSION}",
             f"Catchment prefix: {prefix}",
             f"Catchment area_km2: {area_km2:.6f}",
             f"Start date: {start_str}",
@@ -369,7 +426,7 @@ if "outputs" in st.session_state:
 
     if st.session_state.get("climate_preview") is not None:
         st.subheader("Climate preview")
-        st.dataframe(st.session_state["climate_preview"], use_container_width=True)
+        st.dataframe(st.session_state["climate_preview"], width='stretch')
     if st.session_state.get("combined_preview") is not None:
         st.subheader("Combined climate-flow preview")
-        st.dataframe(st.session_state["combined_preview"], use_container_width=True)
+        st.dataframe(st.session_state["combined_preview"], width='stretch')
