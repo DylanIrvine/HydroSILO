@@ -15,7 +15,7 @@ Current version: 1.0 (set by `APP_VERSION` near the top of `app.py`).
 
 ## Using it
 
-1. Enter an email (SILO asks for one as the username) and a date range.
+1. Enter a date range (no email needed: the app uses its own SILO account).
 2. Upload the catchment boundary: a zipped shapefile, a `.gpkg` or a `.geojson`.
 3. Optionally change the sampling settings, the output prefix, the column detail
    and the date format.
@@ -64,8 +64,10 @@ the catchment climate is their weighted daily mean.
   convention used for SILO and BoM rainfall. Midnight uses the calendar date.
 - **Excess water** uses Morton wet-environment areal PET. The aridity index keeps
   FAO56. The streamlined output drops the derived columns.
-- **Email.** SILO's API expects an email as the username. It is used only for the
-  download request in your session. It is not stored or logged.
+- **Email.** SILO's API expects an email as the username. The app uses its own
+  account (dylan.irvine.apps@gmail.com), so users are not asked for theirs. To
+  use another account when running your own copy, set the `SILO_USERNAME`
+  environment variable.
 
 ## Repository layout
 
@@ -115,11 +117,11 @@ its own can leave old copies of the `silo_catchment` modules in memory.
   The copy saved to read it is deleted straight away. A flow file is read into
   memory only. Nothing is written to a database or permanent storage.
 - To get the climate, the app sends SILO the grid cell coordinates inside the
-  catchment, the date range and the user's email. The boundary file and flow
-  data are not sent. The email is not stored or logged by the app.
+  catchment and the date range, under the app's own SILO account. The boundary
+  file and flow data are not sent.
 - The only thing recorded is a running total of completed runs, kept in an
   Upstash Redis database under the key `silo_run_count`. It has no link to any
-  user, email or file.
+  user or file.
 
 The counter is optional. To turn it on, add this to the app's Secrets on
 Streamlit Cloud, or to `.streamlit/secrets.toml` locally:

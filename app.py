@@ -1,6 +1,6 @@
 """Catchment-averaged SILO climate, with an optional flow join.
 
-A user uploads a catchment boundary, sets a date range and an email, and gets
+A user uploads a catchment boundary, sets a date range, and gets
 the SILO catchment-average climate plus a map of the grid cells used. If they
 also provide a flow file, a combined climate-and-flow file is produced, with
 flow added in mm/d so it can feed a rainfall-runoff model.
@@ -133,15 +133,15 @@ with st.expander('**Privacy and data handling**'):
         '- The results exist only in the files you download.\n\n'
         '**What is sent to SILO**\n'
         '- To get the climate data, the app sends the Queensland Government SILO service the '
-        'grid cell coordinates inside your catchment, the date range, and your email address '
-        '(SILO asks for an email as the username). SILO therefore sees roughly where your '
-        'catchment is. The boundary file and any flow data are not sent.\n'
-        '- Your email is used for that request only. This app does not store or log it.\n\n'
+        'grid cell coordinates inside your catchment and the date range, so SILO sees roughly '
+        'where your catchment is. SILO asks for an email as the username; the app uses its own '
+        'account for this, so you are not asked for yours. The boundary file and any flow data '
+        'are not sent.\n\n'
         '**You**\n'
         '- No login, and no record kept by this app of who you are or where you are. The app does '
         'not log IP addresses or locations.\n'
         '- The only thing recorded is a single running total: the number of completed runs. It '
-        'has no link to any user, email or file.\n\n'
+        'has no link to any user or file.\n\n'
         '**What this does not cover**\n'
         '- Processing happens on the server that hosts the app, not on your computer. If you are '
         'using the public web version, your files travel to that host (which may be outside '
@@ -167,14 +167,7 @@ with st.expander('**How to cite and references**'):
 # 1. request details
 # --------------------------------------------------------------------------- #
 st.header("1. Request details")
-col_email, col_start, col_end = st.columns([2, 1, 1])
-with col_email:
-    email = st.text_input(
-        "Your email (required by SILO)",
-        help="SILO's API expects an email as the username. It is used only for "
-             "the download request in your session and is not stored or logged.",
-    )
-    st.caption("Not stored, not logged. Used only for the SILO request.")
+col_start, col_end = st.columns(2)
 with col_start:
     start_date = st.date_input("Start date", value=dt.date(1950, 1, 1),
                                min_value=SILO_FIRST_DAY, max_value=dt.date.today())
@@ -310,11 +303,7 @@ if flow_file is not None:
 # 6. run
 # --------------------------------------------------------------------------- #
 st.header("5. Run")
-can_run = catchment_ready and bool(email) and ("@" in (email or ""))
-if not email:
-    st.info("Enter your email to enable the run.")
-elif "@" not in email:
-    st.warning("That email does not look valid.")
+can_run = catchment_ready
 if start_date > end_date:
     st.error("The start date is after the end date.")
     can_run = False
@@ -340,8 +329,7 @@ if st.button("Run catchment average", type="primary", disabled=not can_run):
             progress_bar.progress(done / total)
             status.write(f"Downloading cell {done}/{total}  (lat {lat:.2f}, lon {lon:.2f})")
 
-        climate = sc.download_weighted_average(points, start_str, end_str, email,
-                                               progress=report)
+        climate = sc.download_weighted_average(points, start_str, end_str, progress=report)
         status.write("Download complete.")
         progress_bar.progress(1.0)
 

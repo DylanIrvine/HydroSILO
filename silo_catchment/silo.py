@@ -8,6 +8,7 @@ weighted daily mean.
 
 from __future__ import annotations
 
+import os
 import re
 import time
 import urllib.error
@@ -70,13 +71,21 @@ def parse_silo_alldata(data: bytes) -> pd.DataFrame:
     return out.reset_index(drop=True)
 
 
+# SILO asks for an email as the username. The app uses its own account so users
+# do not have to give theirs. Set SILO_USERNAME to use another one (e.g. when
+# running your own copy)
+SILO_USERNAME = os.environ.get("SILO_USERNAME", "dylan.irvine.apps@gmail.com")
+
+
 def download_silo_point(latitude: float, longitude: float, start: str, end: str,
-                        email: str, timeout: int = 180, max_attempts: int = 3) -> pd.DataFrame:
+                        email: str | None = None, timeout: int = 180,
+                        max_attempts: int = 3) -> pd.DataFrame:
     """Download one SILO grid cell for the date range, with retries.
 
     start and end are 'yyyymmdd' strings. email is passed as the SILO username
-    per their API; it is used only for this request.
+    per their API; the app's own account (SILO_USERNAME) is used by default.
     """
+    email = email or SILO_USERNAME
     parameters = {
         "format": "alldata",
         "lat": f"{latitude:.2f}",
@@ -105,7 +114,7 @@ def download_silo_point(latitude: float, longitude: float, start: str, end: str,
     raise RuntimeError("Unexpected end of the SILO retry loop.")
 
 
-def download_weighted_average(points: pd.DataFrame, start: str, end: str, email: str,
+def download_weighted_average(points: pd.DataFrame, start: str, end: str, email: str | None = None,
                               progress: Callable[[int, int, float, float], None] | None = None,
                               pause_seconds: float = 0.5, **download_kwargs) -> pd.DataFrame:
     """Download each unique cell and return the weighted daily mean climate.
