@@ -85,8 +85,7 @@ HydroSILO/
     plotting.py             sampling-cell map
     run_counter.py          shared run total (Upstash Redis over REST)
   tests/                    non-network pytest suite and a headless app check
-  HydroSILO_Logo.png        header logo
-  HydroSILO_favicon.png     browser-tab icon
+  logo/                     header logo, browser-tab icon and svg source
   requirements.txt
   .streamlit/config.toml    dark theme
   LICENSE

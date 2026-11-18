@@ -31,7 +31,7 @@ APP_VERSION = "1.0"
 APP_URL = "https://hydrosilo.streamlit.app/"
 WATERMARK = "Dylan Irvine, Charles Darwin University"
 
-st.set_page_config(page_title=APP_NAME, page_icon="HydroSILO_favicon.png")
+st.set_page_config(page_title=APP_NAME, page_icon="logo/HydroSILO_icon.png")
 
 SILO_FIRST_DAY = dt.date(1889, 1, 1)
 
@@ -106,7 +106,7 @@ with head_text:
     st.write('Dylan Irvine, Charles Darwin University.\n\n')
     st.caption(f"Version {APP_VERSION}")
 with head_logo:
-    st.image('HydroSILO_Logo.png', width='stretch')
+    st.image("logo/HydroSILO_logo.png", width='stretch')
 
 st.markdown(
     "Upload a shapefile or geopackage and obtain averaged climate data for your region using randomly sampled "
