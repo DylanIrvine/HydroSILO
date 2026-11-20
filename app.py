@@ -17,6 +17,8 @@ import zipfile
 from pathlib import Path
 
 import matplotlib.transforms as mtransforms
+import matplotlib.image as mimage
+from matplotlib.offsetbox import AnnotationBbox, HPacker, OffsetImage, TextArea
 import pandas as pd
 import streamlit as st
 
@@ -30,6 +32,7 @@ APP_NAME = "HydroSILO"
 APP_VERSION = "1.0"
 APP_URL = "https://hydrosilo.streamlit.app/"
 WATERMARK = "Dylan Irvine, Charles Darwin University"
+BADGE_ICON = Path(__file__).resolve().parent / "logo" / "HydroSILO_badge.png"
 
 st.set_page_config(page_title=APP_NAME, page_icon="logo/HydroSILO_icon.png")
 
@@ -56,16 +59,32 @@ def figure_bytes(figure) -> bytes:
     return buffer.getvalue()
 
 
+BADGE_PT = 14       # height of the app icon in the "Made using" badge, in points
+
+
+def add_badge(fig, x, y, transform):
+    # "Made using HydroSILO" with the app icon, right-aligned at (x, y). Skipped if the icon is missing
+    try:
+        img = mimage.imread(BADGE_ICON)
+    except (FileNotFoundError, OSError):
+        return
+    packed = HPacker(children=[TextArea("Made using HydroSILO", textprops=dict(fontsize=6, color="0.5")),
+                               OffsetImage(img, zoom=BADGE_PT / img.shape[0])],
+                     align="center", pad=0, sep=3)
+    fig.add_artist(AnnotationBbox(packed, (x, y), xycoords=transform, box_alignment=(1, 0.5),
+                                  frameon=False, pad=0, annotation_clip=False))
+
 def add_watermark(figure):
-    # small grey line in its own strip just below the drawn area, bottom left,
-    # so it can be cropped off without touching the map
+    # credit line bottom left and the 'Made using' badge bottom right, in their own strip
+    # just below the drawn area, so both can be cropped off without touching the map
     figure.canvas.draw()
     box = figure.get_tightbbox(figure.canvas.get_renderer())   # inches
     width, height = figure.get_size_inches()
     below = figure.transFigure + mtransforms.ScaledTranslation(
-        0, -5 / 72, figure.dpi_scale_trans)
+        0, -(BADGE_PT / 2 + 4) / 72, figure.dpi_scale_trans)
     figure.text(box.x0 / width, box.y0 / height, WATERMARK, transform=below,
-                ha="left", va="top", fontsize=6, color="0.5")
+                ha="left", va="center", fontsize=6, color="0.5")
+    add_badge(figure, box.x1 / width, box.y0 / height, below)
 
 
 def save_uploads(files, folder: Path) -> list[Path]:
@@ -147,8 +166,8 @@ with st.expander('**Privacy and data handling**'):
         'using the public web version, your files travel to that host (which may be outside '
         'Australia). The hosting provider and the Streamlit framework may use their own cookies '
         'and keep their own server logs, under their own privacy policies.\n'
-        '- If your data are confidential or subject to a data agreement, run the app on your own '
-        'machine. The code is open source (MIT).')
+        '- If your data are confidential or subject to a data agreement, contact the author about '
+        'running the app on your own machine.')
 
 with st.expander('**How to cite and references**'):
     st.write(
